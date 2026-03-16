@@ -1,0 +1,19 @@
+SUBESTADOS DEL ARBOL BINARIO
+- SUBESTADOS DE INTERES (I) | condicion de avance
+ - SALUDO | Cliente responde sin rechazo duro 
+ - DESCUBRIMIENTO | Al menos un pain point clasificado en el perfil del cliente 
+ - ELECCION | Cliente hace preguntas de implementacion o compara 
+ - OFERTA | Cliente no rechaza la oferta concreta
+ - CONCLUSION | Cliente acepta
+- SUBESTADOS DE NO_INTERES (NI) | MOTIVO | TACTICA
+ - OBJECION DE PRECIO | el cliente no ve valor suficiente | reencuadrar valor, mostrar ROI (muy sencillo)
+ - OBJECIO DE TIEMPO | el momento no le parece adecuado | reducir friccion, proponer inicio minimo, agendar cita
+ - OBJECION DE NECESIDAD | no percibe que tiene el problema que el producto resuelve | revelar paint point
+ - OBJECION DE AUTORIDAD | No es el decisor | Redirigir al decisor o agendar llamada
+ - RECHAZO DURO | Cierre explicito de la conversacion | no insistir, registrar lead para el futuro
+- SUBESTADOS DE INDETERMINADO
+El estado IND es un estado de transicion puro. No tiene subestados propios. Su único objetivo
+es solicitar una confirmacion del cliente usando el contexto previo de la conversacion para
+reformular la pregunta de forma más concreta.
+
+

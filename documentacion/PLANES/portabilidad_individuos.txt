@@ -1,0 +1,158 @@
+Estas son tres ofertas con las que se puede trabajar el mes de marzo para individuos, dependiendo del dia se elegira una de estas promociones para ofrecerle al cliente. 
+
+{
+  "planes_base": [
+    {
+      "plan_id": "plan_4gb",
+      "datos_gb": 4,
+      "beneficios_base": {
+        "whatsapp_gratis": true,
+        "llamadas_ilimitadas": true,
+        "freefire_gb": 1
+      },
+      "roaming": null
+    },
+    {
+      "plan_id": "plan_8gb",
+      "datos_gb": 8,
+      "beneficios_base": {
+        "whatsapp_gratis": true,
+        "llamadas_ilimitadas": true,
+        "freefire_gb": 1
+      },
+      "roaming": {
+        "zona": "America",
+        "datos_incluidos_gb": 3,
+        "incluye_llamadas": false,
+        "incluye_sms": false
+      }
+    },
+    {
+      "plan_id": "plan_15gb",
+      "datos_gb": 15,
+      "beneficios_base": {
+        "whatsapp_gratis": true,
+        "llamadas_ilimitadas": true,
+        "freefire_gb": 1
+      },
+      "roaming": {
+        "zona": "Mundo",
+        "datos_incluidos_gb": 5,
+        "incluye_llamadas": false,
+        "incluye_sms": false
+      }
+    },
+    {
+      "plan_id": "plan_30gb",
+      "datos_gb": 30,
+      "beneficios_base": {
+        "whatsapp_gratis": true,
+        "llamadas_ilimitadas": true,
+        "freefire_gb": 1
+      },
+      "roaming": {
+        "zona": "Mundo",
+        "datos_incluidos_gb": 8,
+        "incluye_llamadas": false,
+        "incluye_sms": false
+      }
+    },
+    {
+      "plan_id": "plan_50gb",
+      "datos_gb": 50,
+      "beneficios_base": {
+        "whatsapp_gratis": true,
+        "llamadas_ilimitadas": true,
+        "freefire_gb": 1
+      },
+      "roaming": {
+        "zona": "Mundo",
+        "datos_incluidos_gb": 8,
+        "incluye_llamadas": false,
+        "incluye_sms": false
+      }
+    }
+  ],
+
+  "promociones": [
+    {
+      "promo_id": "marzo_75",
+      "nombre": "Marzo 75%",
+      "porcentaje_descuento": 75,
+      "duracion_descuento_meses": 6,
+      "validez_oferta": "diaria",
+      "beneficios_promocion": {
+        "gigas_regalo_por_plan": {
+          "plan_4gb": 4,
+          "planes_desde_8gb": 8,
+          "duracion_meses": 6
+        },
+        "beneficios_generales": [
+          "Movistar con Todo: Ahorra hasta $4000 por mes en tu factura fija + 4GB si tiene Movistar Hogar",
+          "Gigas Gratis: 20GB por 30 días descargables desde la app (1 vez al año)",
+          "Grupo Familiar: 4GB extra por línea si porta entre 2 y 5 líneas",
+          "Guarda Gigas: permite guardar los GB del plan base por 30 días",
+          "Pasá y Pedí Gigas disponible desde 1.5GB"
+        ]
+      },
+      "precios": {
+        "plan_4gb": { "precio_full": 40250, "precio_final": 10062 },
+        "plan_8gb": { "precio_full": 55300, "precio_final": 13825 },
+        "plan_15gb": { "precio_full": 81100, "precio_final": 20275 },
+        "plan_30gb": { "precio_full": 86600, "precio_final": 21650 },
+        "plan_50gb": { "precio_full": 96650, "precio_final": 24162 }
+      }
+    },
+    {
+      "promo_id": "marzo_80",
+      "nombre": "Marzo 80%",
+      "porcentaje_descuento": 80,
+      "duracion_descuento_meses": 6,
+      "validez_oferta": "diaria",
+      "beneficios_promocion": {
+        "gigas_regalo": {
+          "gigas_extra": 10,
+          "duracion_meses": 6
+        },
+        "beneficios_generales": [
+          "Movistar con Todo: Ahorra hasta $4000 por mes en tu factura fija + 4GB si tiene Movistar Hogar",
+          "Gigas Gratis: 20GB por 30 días descargables desde la app (1 vez al año)",
+          "Grupo Familiar: 4GB extra por línea si porta entre 2 y 5 líneas",
+          "Guarda Gigas: permite guardar los GB del plan base por 30 días",
+          "Pasá y Pedí Gigas disponible desde 1.5GB"
+        ]
+      },
+      "precios": {
+        "plan_4gb": { "precio_full": 40250, "precio_final": 8050 },
+        "plan_8gb": { "precio_full": 55300, "precio_final": 11060 }
+      }
+    },
+    {
+      "promo_id": "marzo_85",
+      "nombre": "Marzo 85%",
+      "porcentaje_descuento": 85,
+      "duracion_descuento_meses": 6,
+      "validez_oferta": "diaria",
+      "beneficios_promocion": {
+        "gigas_regalo": {
+          "gigas_extra": 10,
+          "duracion_meses": 6
+        },
+        "beneficios_generales": [
+          "Movistar con Todo: Ahorra hasta $4000 por mes en tu factura fija + 4GB si tiene Movistar Hogar",
+          "Gigas Gratis: 20GB por 30 días descargables desde la app (1 vez al año)",
+          "Grupo Familiar: 4GB extra por línea si porta entre 2 y 5 líneas",
+          "Guarda Gigas: permite guardar los GB del plan base por 30 días",
+          "Pasá y Pedí Gigas disponible desde 1.5GB"
+        ]
+      },
+      "precios": {
+        "plan_4gb": { "precio_full": 40250, "precio_final": 6037 },
+        "plan_8gb": { "precio_full": 55300, "precio_final": 8295 },
+        "plan_15gb": { "precio_full": 81100, "precio_final": 12165 },
+        "plan_30gb": { "precio_full": 86600, "precio_final": 12990 },
+        "plan_50gb": { "precio_full": 96650, "precio_final": 14497 }
+      }
+    }
+  ]
+}

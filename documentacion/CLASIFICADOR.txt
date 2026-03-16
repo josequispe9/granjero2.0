@@ -1,0 +1,29 @@
+Esta es la documentacion del clasificador 
+
+Esta es una de las tareas mas importantes del agente ya que nos 
+ayuda a observar cual es la situacion actual del cliente para asi luego trabajar
+la mejor estrategia a la hora de responder.
+
+
+- Hay un tercer estado INDETERMINADO que se debe pedir al cliente mas claridad para poder continuar
+- guarda toda la informacion en el BLACKBOARD [ver documentacion BLACKBOARD.txt]
+
+
+El clasificador debe resolver este problema 
+'4. El modelo es estático dentro de una sesión
+El client_profile se construye durante la conversación pero no tiene un mecanismo de revisión. Si el cliente dice algo en el turno 8 que contradice lo que dijo en el turno 2, el modelo no tiene forma de actualizar ni reconciliar esa información. El perfil puede volverse inconsistente y el agente tomar decisiones basadas en datos desactualizados.'
+
+
+PODEMOS TENER ESTOS CLASIFICADORES
+
+- CLASIFICADOR DE ESTADO: INTERES / NO_INTERES : Clasifica el estado emocional del cliente en I, IND, NI
+ - Input: ultimo mensaje del clietne + contexto reciete
+ - Output: {estado, subestado, confianza}
+ - Inicialmente trata de determinar entre los estados I y NI pero si la confianza es muy baja se clasifica como IND
+
+- CLASIFICADOR DE FASE: Evalua si la fase de Cardone actual debe avanzar
+ - Input: 
+ - Output: 
+- CLASIFICADOR DE REVISION
+- CLASIFICADOR DE PROMP INJECTION
+- CLASIFICADOR DE OBJECION

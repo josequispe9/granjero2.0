@@ -1,0 +1,9 @@
+Conceptos del libro útiles para tu proyecto
+1. La regla de las objeciones falsas
+Cardone distingue entre objeción real y objeción falsa. "Es muy caro" en el 80% de los casos no es una objeción de precio, es una objeción de valor: el cliente no vio suficiente valor todavía. Esto te sirve para el clasificador: antes de asignar objecion_precio, el nodo debería evaluar si es realmente precio o si es falta de valor percibido, porque la respuesta táctica es completamente distinta.
+2. La persistencia como proceso, no como insistencia
+Cardone diferencia entre insistir con el mismo argumento (inútil) y volver a intentar el cierre con un ángulo diferente cada vez. Esto mapea directamente a tu consecutive_ni: cada intento dentro de una fase debe tener un ángulo distinto, no repetir el mismo mensaje. El nodo de estrategia debería trackear qué argumentos ya usó.
+3. El acuerdo como técnica
+Cardone dice que antes de responder una objeción siempre hay que darle la razón al cliente parcialmente. "Entiendo que el precio es importante..." Esto baja la resistencia antes de reencuadrar. Es una instrucción concreta que podés meter en el prompt del nodo NI.
+4. Urgencia y escasez
+Cardone lo usa mucho en el paso de conclusión. Para tu agente tiene una aplicación específica: cuando el cliente llega a I(conclusion) pero no termina de cerrar, el agente necesita un mecanismo de urgencia genuino. Puede ser una promoción vigente, un cupo limitado, o una fecha de implementación. Esto debería estar en el contexto del agente desde el inicio, no improvisado.

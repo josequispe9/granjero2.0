@@ -1,0 +1,237 @@
+
+
+
+
+INTERES
+- Descubrimiento del pain_point del cliente
+[ver documentacion PROCESOS-DE-CARDONE.txt]
+
+INDETERMINADO
+
+NO INTERES
+[ver documentacion MANEJO-DE-OBJECIONES.txt]
+
+este es el arbol de comportamiento 
+
+<?xml version="1.0" encoding="UTF-8"?>
+
+<root BTCPP_format="4">
+
+  <!-- ================================================= -->
+  <!-- DEFINICIÓN DE TODOS LOS TIPOS DE NODOS DEL ÁRBOL -->
+  <!-- ================================================= -->
+
+  <TreeNodesModel>
+
+    <!-- CONDITIONS -->
+
+    <Condition ID="estado_I"/>
+    <Condition ID="estado_IND"/>
+    <Condition ID="estado_NI"/>
+
+    <Condition ID="subestado_precio"/>
+    <Condition ID="subestado_tiempo"/>
+    <Condition ID="subestado_necesidad"/>
+    <Condition ID="subestado_autoridad"/>
+
+
+    <!-- ACTIONS -->
+
+    <Action ID="pedir_confirmacion"/>
+
+    <Action ID="reencuadrar_valor"/>
+    <Action ID="mostrar_roi"/>
+    <Action ID="caso_exito"/>
+    <Action ID="prueba_piloto"/>
+
+    <Action ID="inicio_minimo"/>
+    <Action ID="fecha_flexible"/>
+    <Action ID="urgencia"/>
+
+    <Action ID="revelar_pain_point"/>
+    <Action ID="pain_point_oculto"/>
+
+    <Action ID="redirigir_decisor"/>
+    <Action ID="agendar_llamada"/>
+
+    <Action ID="rechazo_duro_fin"/>
+    <Action ID="fallback_fin"/>
+
+
+    <!-- DECORATORS -->
+
+    <Decorator ID="slots_completos"/>
+    <Decorator ID="confianza_70"/>
+    <Decorator ID="confianza_75"/>
+    <Decorator ID="max_1_consecutivo"/>
+    <Decorator ID="max_intentos_dinamico"/>
+
+
+    <!-- SUBTREES -->
+
+    <SubTree ID="I1_Saludos"/>
+    <SubTree ID="I2_Descubrimiento"/>
+    <SubTree ID="I3_Eleccion"/>
+    <SubTree ID="I4_Oferta"/>
+    <SubTree ID="I5_Cierre"/>
+
+  </TreeNodesModel>
+
+
+  <!-- ====================== -->
+  <!-- ÁRBOL DE COMPORTAMIENTO -->
+  <!-- ====================== -->
+
+  <BehaviorTree ID="sales_agent_tree">
+
+    <Fallback name="Selector_Principal">
+
+
+      <!-- ================= -->
+      <!-- CAMINO FELIZ -->
+      <!-- ================= -->
+
+      <Sequence name="Camino_Feliz">
+
+        <Condition ID="estado_I"/>
+
+        <Sequence name="Proceso_Cardone">
+
+          <Decorator ID="slots_completos">
+            <SubTree ID="I1_Saludos"/>
+          </Decorator>
+
+          <Decorator ID="slots_completos">
+            <SubTree ID="I2_Descubrimiento"/>
+          </Decorator>
+
+          <Decorator ID="confianza_70">
+            <SubTree ID="I3_Eleccion"/>
+          </Decorator>
+
+          <Decorator ID="confianza_75">
+            <SubTree ID="I4_Oferta"/>
+          </Decorator>
+
+          <SubTree ID="I5_Cierre"/>
+
+        </Sequence>
+
+      </Sequence>
+
+
+      <!-- ================= -->
+      <!-- MANEJO IND -->
+      <!-- ================= -->
+
+      <Sequence name="Manejo_Ambiguedad">
+
+        <Condition ID="estado_IND"/>
+
+        <Decorator ID="max_1_consecutivo">
+          <Action ID="pedir_confirmacion"/>
+        </Decorator>
+
+      </Sequence>
+
+
+      <!-- ================= -->
+      <!-- MANEJO OBJECIONES -->
+      <!-- ================= -->
+
+      <Sequence name="Manejo_Objeciones">
+
+        <Condition ID="estado_NI"/>
+
+        <Decorator ID="max_intentos_dinamico">
+
+          <Fallback name="Selector_Objeciones">
+
+
+            <!-- OBJECIÓN PRECIO -->
+
+            <Sequence name="objecion_precio">
+
+              <Condition ID="subestado_precio"/>
+
+              <Fallback name="Argumentos_Precio">
+
+                <Action ID="reencuadrar_valor"/>
+                <Action ID="mostrar_roi"/>
+                <Action ID="caso_exito"/>
+                <Action ID="prueba_piloto"/>
+
+              </Fallback>
+
+            </Sequence>
+
+
+            <!-- OBJECIÓN TIEMPO -->
+
+            <Sequence name="objecion_tiempo">
+
+              <Condition ID="subestado_tiempo"/>
+
+              <Fallback name="Argumentos_Tiempo">
+
+                <Action ID="inicio_minimo"/>
+                <Action ID="fecha_flexible"/>
+                <Action ID="urgencia"/>
+
+              </Fallback>
+
+            </Sequence>
+
+
+            <!-- OBJECIÓN NECESIDAD -->
+
+            <Sequence name="objecion_necesidad">
+
+              <Condition ID="subestado_necesidad"/>
+
+              <Fallback name="Argumentos_Necesidad">
+
+                <Action ID="revelar_pain_point"/>
+                <Action ID="pain_point_oculto"/>
+
+              </Fallback>
+
+            </Sequence>
+
+
+            <!-- OBJECIÓN AUTORIDAD -->
+
+            <Sequence name="objecion_autoridad">
+
+              <Condition ID="subestado_autoridad"/>
+
+              <Fallback name="Argumentos_Autoridad">
+
+                <Action ID="redirigir_decisor"/>
+                <Action ID="agendar_llamada"/>
+
+              </Fallback>
+
+            </Sequence>
+
+
+            <!-- RECHAZO DURO -->
+
+            <Action ID="rechazo_duro_fin"/>
+
+          </Fallback>
+
+        </Decorator>
+
+      </Sequence>
+
+
+      <!-- FALLBACK FINAL -->
+
+      <Action ID="fallback_fin"/>
+
+    </Fallback>
+
+  </BehaviorTree>
+
+</root>

@@ -1,0 +1,38 @@
+Estados principales INTERES, INDETERMINADO, NO_INTERES
+
+Dado que tenemos dos estados principales INTERES / NO_INTERES podemos diagramar el historial
+de la conversacion que se esta generando como un arbol binario donde a la izquierda de cada nodo
+crearemos los nodos para las respuestas que fueron clasificadas como INTERES y a la derecha de cada
+nodo crearemos los nodos para las respuestas que fueron clasificadas como NO_INTERES. El tercer estado INDETERMINADO
+se asigna cuando el CLASIFICADOR no tiene un valor alto de confianza en su clasificacion porque el mensaje resulta 
+ambiguo o con muy poca informacion para determinarlo, este estado no se diagrama en el arbol ya que es de transicion, 
+el agente usa este estado para pedir mas claridad o confirmacion en la respuesta del cliente. 
+
+Cada nodo ademas del estado tambien deberas guardar informacion del subestado en cada nodo
+
+Esta forma de mapear el historial de una conversacion nos permite hacer analisis como por ejemplo
+ - una sucesion {I, NI, I, NI, I, ...} o similar puede representar un cliente indeciso, o un agente poco efectivo.
+ - una sucesion {I, I, I, I, NI, I, I, ...} es mas probable que termine en venta que una sucesion {NI, NI, NI, I, NI, NI, NI, ...}
+ - un nodo I es mas valioso si esta mas abajo en el arbol, y un nodo NI es mas facil de resolver si tambien esta mas abajo
+ - Si una sucesion es poco o muy probable que termine en venta se puede clasificar para monitoreo
+ - En el futuro se puede utilizar como modelo predictivo de conversion ya que puedo compara una conversacion actual con el historial de otro arbol y evaluar cual fue la mejor espuesta para ese caso similar
+ - El objetivo del agente es llevar la conversacion a la izquierda
+ - El único objetivo de cualquier nodo NI es devolver al cliente al subestado de I donde estaba antes de la objeción. No retrocede fases, vuelve al mismo punto.
+
+METRICAS:
+Tasa de reversión NI → I
+Cuántas veces el agente logró convertir un NI en I en el turno siguiente. Es la métrica más importante porque mide directamente la capacidad de manejo de objeciones.
+Profundidad promedio hasta cierre
+En cuántos turnos promedio llega a listo. Un agente mejor debería cerrar en menos turnos.
+Tasa de poda
+Qué porcentaje de conversaciones terminan en 3 NI consecutivos. Si es muy alta, el agente no está generando interés o está targetizando mal.
+Distribución de caminos
+De todas las conversaciones, qué caminos son los más frecuentes. Si el camino I → NI → I → NI → I aparece mucho, sabés que hay una objeción recurrente que el agente no está resolviendo bien en el primer intento.
+
+
+[ver documentacion MANEJO-DE-ESTADOS.txt]
+[ver documentacion MAPEO-DE-CONVERSACIONES.txt]
+[ver documentacion CLASIFICADOR.txt]
+
+
+Reglas de PODA 

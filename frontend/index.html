@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Vendedor IA - Agente CBST</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; display: flex; justify-content: center; align-items: center; height: 100vh; gap: 12px; padding: 12px; }
+
+    /* Modal nombre */
+    #name-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: flex; justify-content: center; align-items: center; z-index: 10; }
+    #name-modal.hidden { display: none; }
+    #name-box { background: white; padding: 32px; border-radius: 12px; width: 320px; text-align: center; }
+    #name-box h2 { margin-bottom: 8px; font-size: 18px; }
+    #name-box p { color: #666; font-size: 13px; margin-bottom: 20px; }
+    #name-input { width: 100%; padding: 10px 14px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; outline: none; margin-bottom: 12px; }
+    #name-input:focus { border-color: #1a73e8; }
+    #name-btn { width: 100%; padding: 10px; background: #1a73e8; color: white; border: none; border-radius: 8px; font-size: 14px; cursor: pointer; }
+
+    /* Chat */
+    #chat-container { background: white; width: 380px; height: 700px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); display: flex; flex-direction: column; flex-shrink: 0; }
+    #chat-header { background: #1a73e8; color: white; padding: 14px 18px; border-radius: 12px 12px 0 0; display: flex; justify-content: space-between; align-items: center; }
+    #chat-header span { font-weight: bold; font-size: 15px; }
+    #new-chat-btn { background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.5); color: white; border-radius: 6px; padding: 4px 10px; font-size: 11px; cursor: pointer; }
+    #messages { flex: 1; overflow-y: auto; padding: 14px; display: flex; flex-direction: column; gap: 8px; }
+    .msg { max-width: 82%; padding: 9px 13px; border-radius: 16px; font-size: 13px; line-height: 1.4; }
+    .msg.user { background: #1a73e8; color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
+    .msg.bot { background: #f0f2f5; color: #333; align-self: flex-start; border-bottom-left-radius: 4px; }
+    .msg.typing { color: #999; font-style: italic; }
+    .msg.system { background: #fff3cd; color: #856404; align-self: center; font-size: 11px; border-radius: 8px; }
+    #input-area { display: flex; padding: 10px; gap: 8px; border-top: 1px solid #eee; }
+    #user-input { flex: 1; padding: 9px 14px; border: 1px solid #ddd; border-radius: 20px; font-size: 13px; outline: none; }
+    #user-input:focus { border-color: #1a73e8; }
+    #send-btn { background: #1a73e8; color: white; border: none; border-radius: 50%; width: 36px; height: 36px; cursor: pointer; font-size: 16px; }
+    #send-btn:disabled { background: #aaa; cursor: not-allowed; }
+
+    /* Panel de estado (derecha) */
+    #state-panel { background: white; width: 240px; height: 700px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); display: flex; flex-direction: column; overflow: hidden; flex-shrink: 0; }
+    #state-panel h3 { background: #f8f9fa; padding: 12px 14px; font-size: 11px; color: #555; border-bottom: 1px solid #eee; letter-spacing: 0.5px; text-transform: uppercase; }
+    #state-fields { padding: 10px 14px; display: flex; flex-direction: column; gap: 8px; flex: 1; overflow-y: auto; }
+    .state-field label { display: block; font-size: 9px; color: #999; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 1px; }
+    .state-field .value { font-size: 12px; color: #333; font-weight: 500; min-height: 16px; }
+    .state-field .value.empty { color: #bbb; font-style: italic; font-weight: 400; }
+    .state-divider { border: none; border-top: 1px solid #f0f2f5; margin: 2px 0; }
+    .badge { display: inline-block; padding: 1px 7px; border-radius: 10px; font-size: 10px; font-weight: 600; }
+    .badge-i { background: #d4edda; color: #155724; }
+    .badge-ni { background: #f8d7da; color: #721c24; }
+    .badge-ind { background: #fff3cd; color: #856404; }
+    .badge-phase { background: #e8f0fe; color: #1a73e8; }
+    .badge-term { background: #343a40; color: white; }
+    .tree-viz { display: flex; flex-wrap: wrap; gap: 3px; }
+    .tree-node { width: 16px; height: 16px; border-radius: 3px; font-size: 8px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; }
+    .tree-node.I { background: #28a745; }
+    .tree-node.NI { background: #dc3545; }
+    .metric-row { display: flex; justify-content: space-between; font-size: 11px; }
+    .metric-row .metric-val { font-weight: 600; color: #333; }
+
+    /* ===== BT Panel (izquierda) ===== */
+    #bt-panel { background: white; width: 380px; height: 700px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); display: flex; flex-direction: column; overflow: hidden; flex-shrink: 0; }
+    #bt-panel h3 { background: #2d2d2d; padding: 12px 14px; font-size: 11px; color: #ccc; border-bottom: 1px solid #444; letter-spacing: 0.5px; text-transform: uppercase; }
+    #bt-tree-container { flex: 1; overflow-y: auto; padding: 12px 8px; background: #1a1a2e; }
+
+    /* BT Tree nodes */
+    .bt-row { display: flex; align-items: center; padding: 2px 0; font-size: 11px; font-family: 'Consolas', 'Monaco', monospace; color: #666; white-space: nowrap; }
+    .bt-indent { display: inline-block; width: 18px; flex-shrink: 0; }
+    .bt-connector { color: #444; margin-right: 2px; flex-shrink: 0; }
+    .bt-icon { width: 18px; height: 18px; border-radius: 3px; display: inline-flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 700; margin-right: 5px; flex-shrink: 0; border: 1px solid transparent; }
+    .bt-icon.selector { background: #2a2a4a; color: #7b8cde; border-color: #3a3a5a; }
+    .bt-icon.sequence { background: #2a3a2a; color: #7bde8c; border-color: #3a5a3a; }
+    .bt-icon.condition { background: #3a3a2a; color: #dec87b; border-color: #5a5a3a; }
+    .bt-icon.decorator { background: #3a2a3a; color: #c87bde; border-color: #5a3a5a; }
+    .bt-icon.action { background: #2a3a3a; color: #7bdede; border-color: #3a5a5a; }
+    .bt-label { flex-shrink: 0; }
+    .bt-status { margin-left: auto; padding-left: 8px; font-size: 9px; font-weight: 600; flex-shrink: 0; }
+
+    /* Trace highlighting */
+    .bt-row.visited { color: #ccc; }
+    .bt-row.visited.success { color: #7bde8c; }
+    .bt-row.visited.success .bt-icon { box-shadow: 0 0 6px rgba(123,222,140,0.4); }
+    .bt-row.visited.failure { color: #de7b7b; }
+    .bt-row.visited.failure .bt-icon { opacity: 0.6; }
+    .bt-row.active-action { color: #fff; background: rgba(123,222,140,0.12); border-radius: 4px; }
+    .bt-row.active-action .bt-icon { box-shadow: 0 0 10px rgba(123,222,140,0.6); border-color: #7bde8c; }
+    .bt-status.s-ok { color: #4caf50; }
+    .bt-status.s-fail { color: #ef5350; }
+
+    /* Legend */
+    .bt-legend { display: flex; gap: 10px; padding: 8px 14px; background: #2d2d2d; border-top: 1px solid #444; font-size: 9px; color: #888; flex-wrap: wrap; }
+    .bt-legend-item { display: flex; align-items: center; gap: 3px; }
+    .bt-legend-dot { width: 10px; height: 10px; border-radius: 2px; }
+  </style>
+</head>
+<body>
+
+  <!-- Modal para nombre -->
+  <div id="name-modal">
+    <div id="name-box">
+      <h2>Agente de Ventas Movistar</h2>
+      <p>Ingresa el nombre del cliente para iniciar</p>
+      <input id="name-input" type="text" placeholder="Nombre del cliente" maxlength="50" />
+      <button id="name-btn">Iniciar conversacion</button>
+    </div>
+  </div>
+
+  <!-- BT Panel (izquierda) -->
+  <div id="bt-panel">
+    <h3>Behaviour Tree</h3>
+    <div id="bt-tree-container"></div>
+    <div class="bt-legend">
+      <div class="bt-legend-item"><div class="bt-legend-dot" style="background:#7b8cde"></div> Selector</div>
+      <div class="bt-legend-item"><div class="bt-legend-dot" style="background:#7bde8c"></div> Sequence</div>
+      <div class="bt-legend-item"><div class="bt-legend-dot" style="background:#dec87b"></div> Condition</div>
+      <div class="bt-legend-item"><div class="bt-legend-dot" style="background:#c87bde"></div> Decorator</div>
+      <div class="bt-legend-item"><div class="bt-legend-dot" style="background:#7bdede"></div> Action</div>
+    </div>
+  </div>
+
+  <!-- Chat -->
+  <div id="chat-container">
+    <div id="chat-header">
+      <span>Vendedor IA</span>
+      <small id="customer-label"></small>
+      <button id="new-chat-btn">+ Nueva</button>
+    </div>
+    <div id="messages"></div>
+    <div id="input-area">
+      <input id="user-input" type="text" placeholder="Escribe un mensaje..." />
+      <button id="send-btn">&#9658;</button>
+    </div>
+  </div>
+
+  <!-- Panel de estado (derecha) -->
+  <div id="state-panel">
+    <h3>Blackboard</h3>
+    <div id="state-fields">
+      <div class="state-field"><label>Session</label><div class="value empty" id="s-session_id">&mdash;</div></div>
+      <div class="state-field"><label>Cliente</label><div class="value empty" id="s-customer_name">&mdash;</div></div>
+      <hr class="state-divider">
+      <div class="state-field"><label>Estado</label><div class="value empty" id="s-current_state">&mdash;</div></div>
+      <div class="state-field"><label>Subestado</label><div class="value empty" id="s-sub_state">&mdash;</div></div>
+      <div class="state-field"><label>Confianza</label><div class="value empty" id="s-confidence">&mdash;</div></div>
+      <hr class="state-divider">
+      <div class="state-field"><label>Fase Cardone</label><div class="value empty" id="s-cardone_phase">&mdash;</div></div>
+      <div class="state-field"><label>Pain Point</label><div class="value empty" id="s-pain_point">&mdash;</div></div>
+      <div class="state-field"><label>Producto</label><div class="value empty" id="s-product_interested">&mdash;</div></div>
+      <hr class="state-divider">
+      <div class="state-field"><label>Tactica</label><div class="value empty" id="s-tactic">&mdash;</div></div>
+      <div class="state-field"><label>Objecion</label><div class="value empty" id="s-objection">&mdash;</div></div>
+      <div class="state-field"><label>NI Consecutivos</label><div class="value empty" id="s-consecutive_ni">&mdash;</div></div>
+      <hr class="state-divider">
+      <div class="state-field"><label>Terminacion</label><div class="value empty" id="s-termination">&mdash;</div></div>
+      <div class="state-field"><label>Score</label><div class="value empty" id="s-score_conversation">&mdash;</div></div>
+      <div class="state-field"><label>Injection</label><div class="value empty" id="s-prompt_injection_attempts">&mdash;</div></div>
+      <hr class="state-divider">
+      <div class="state-field"><label>Binary Tree</label><div class="tree-viz" id="s-binary_tree"></div></div>
+      <div class="state-field"><label>Metricas</label><div id="s-metrics"></div></div>
+      <div class="state-field"><label>Args Usados</label><div class="value empty" id="s-used_arguments">&mdash;</div></div>
+    </div>
+  </div>
+
+  <script>
+    const API = 'http://localhost:8000';
+    const messagesEl = document.getElementById('messages');
+    const input = document.getElementById('user-input');
+    const btn = document.getElementById('send-btn');
+    const modal = document.getElementById('name-modal');
+    const nameInput = document.getElementById('name-input');
+    const nameBtn = document.getElementById('name-btn');
+    const customerLabel = document.getElementById('customer-label');
+    const btContainer = document.getElementById('bt-tree-container');
+
+    let sessionId = localStorage.getItem('session_id');
+    let customerName = localStorage.getItem('customer_name');
+
+    // ===== BT STATIC TREE DEFINITION =====
+    // Mirrors the Python _build_tree() structure exactly
+    const BT_TREE = {
+      id: 'sel_root', type: 'selector', label: 'Root', children: [
+        { id: 'seq_feliz', type: 'sequence', label: 'Camino Feliz', children: [
+          { id: 'c_I', type: 'condition', label: 'estado_I' },
+          { id: 'd_conf70', type: 'decorator', label: 'confianza_70', children: [
+            { id: 'a_avanzar', type: 'action', label: 'avanzar_fase' },
+          ]},
+        ]},
+        { id: 'seq_ambig', type: 'sequence', label: 'Ambiguedad', children: [
+          { id: 'c_IND', type: 'condition', label: 'estado_IND' },
+          { id: 'a_confirmar', type: 'action', label: 'pedir_confirmacion' },
+        ]},
+        { id: 'seq_objs', type: 'sequence', label: 'Objeciones', children: [
+          { id: 'c_NI', type: 'condition', label: 'estado_NI' },
+          { id: 'sel_objs', type: 'selector', label: 'Tipo Objecion', children: [
+            { id: 'seq_precio', type: 'sequence', label: 'Obj Precio', children: [
+              { id: 'c_precio', type: 'condition', label: 'sub_precio' },
+              { id: 'd_max_precio', type: 'decorator', label: 'max_intentos', children: [
+                { id: 'sel_precio_tac', type: 'selector', label: 'Tacticas', children: [
+                  { id: 'd_max1_reenc', type: 'decorator', label: 'max1', children: [
+                    { id: 'a_reenc', type: 'action', label: 'reencuadrar_valor' },
+                  ]},
+                  { id: 'd_max1_roi', type: 'decorator', label: 'max1', children: [
+                    { id: 'a_roi', type: 'action', label: 'mostrar_roi' },
+                  ]},
+                  { id: 'd_max1_caso', type: 'decorator', label: 'max1', children: [
+                    { id: 'a_caso', type: 'action', label: 'caso_exito' },
+                  ]},
+                  { id: 'a_piloto', type: 'action', label: 'prueba_piloto' },
+                ]},
+              ]},
+            ]},
+            { id: 'seq_tiempo', type: 'sequence', label: 'Obj Tiempo', children: [
+              { id: 'c_tiempo', type: 'condition', label: 'sub_tiempo' },
+              { id: 'd_max_tiempo', type: 'decorator', label: 'max_intentos', children: [
+                { id: 'sel_tiempo_tac', type: 'selector', label: 'Tacticas', children: [
+                  { id: 'd_max1_min', type: 'decorator', label: 'max1', children: [
+                    { id: 'a_minimo', type: 'action', label: 'inicio_minimo' },
+                  ]},
+                  { id: 'd_max1_fecha', type: 'decorator', label: 'max1', children: [
+                    { id: 'a_fecha', type: 'action', label: 'fecha_flexible' },
+                  ]},
+                  { id: 'a_urgencia', type: 'action', label: 'urgencia' },
+                ]},
+              ]},
+            ]},
+            { id: 'seq_necesidad', type: 'sequence', label: 'Obj Necesidad', children: [
+              { id: 'c_necesidad', type: 'condition', label: 'sub_necesidad' },
+              { id: 'd_max_nec', type: 'decorator', label: 'max_intentos', children: [
+                { id: 'sel_nec_tac', type: 'selector', label: 'Tacticas', children: [
+                  { id: 'd_max1_rev', type: 'decorator', label: 'max1', children: [
+                    { id: 'a_revelar', type: 'action', label: 'revelar_pain_point' },
+                  ]},
+                  { id: 'a_oculto', type: 'action', label: 'pain_point_oculto' },
+                ]},
+              ]},
+            ]},
+            { id: 'seq_autoridad', type: 'sequence', label: 'Obj Autoridad', children: [
+              { id: 'c_autoridad', type: 'condition', label: 'sub_autoridad' },
+              { id: 'sel_aut_tac', type: 'selector', label: 'Tacticas', children: [
+                { id: 'd_max1_redir', type: 'decorator', label: 'max1', children: [
+                  { id: 'a_redir', type: 'action', label: 'redirigir_decisor' },
+                ]},
+                { id: 'a_agendar', type: 'action', label: 'agendar_llamada' },
+              ]},
+            ]},
+            { id: 'seq_rechazo', type: 'sequence', label: 'Rechazo Duro', children: [
+              { id: 'c_rechazo', type: 'condition', label: 'sub_rechazo_duro' },
+              { id: 'a_rechazo', type: 'action', label: 'rechazo_duro_fin' },
+            ]},
+          ]},
+        ]},
+        { id: 'a_fallback', type: 'action', label: 'fallback_fin' },
+      ]
+    };
+
+    const TYPE_ICONS = {
+      selector: '?',
+      sequence: '\u2192',
+      condition: '\u25C6',
+      decorator: '\u25D4',
+      action: '\u25BA',
+    };
+
+    function renderBTTree(trace) {
+      // Build lookup from trace: id -> status
+      const traceMap = {};
+      for (const t of (trace || [])) {
+        traceMap[t.id] = t.status;
+      }
+      // Find the active action (last action with SUCCESS in trace)
+      let activeActionId = null;
+      for (const t of (trace || [])) {
+        if (t.type === 'action' && t.status === 'SUCCESS') activeActionId = t.id;
+      }
+
+      const lines = [];
+      function walk(node, depth, isLast, prefixes) {
+        const visited = node.id in traceMap;
+        const status = traceMap[node.id];
+        const isSuccess = status === 'SUCCESS';
+        const isActive = node.id === activeActionId;
+
+        // Build CSS classes
+        let cls = 'bt-row';
+        if (visited) cls += ' visited ' + (isSuccess ? 'success' : 'failure');
+        if (isActive) cls += ' active-action';
+
+        // Connector
+        const connector = depth === 0 ? '' : (isLast ? '\u2514\u2500' : '\u251C\u2500');
+
+        // Status indicator
+        let statusHtml = '';
+        if (visited) {
+          const sCls = isSuccess ? 's-ok' : 's-fail';
+          const sText = isSuccess ? 'OK' : 'FAIL';
+          statusHtml = `<span class="bt-status ${sCls}">${sText}</span>`;
+        }
+
+        const indent = prefixes.map(() => '<span class="bt-indent"></span>').join('');
+        lines.push(
+          `<div class="${cls}">`
+          + indent
+          + (connector ? `<span class="bt-connector">${connector}</span>` : '')
+          + `<span class="bt-icon ${node.type}">${TYPE_ICONS[node.type]}</span>`
+          + `<span class="bt-label">${node.label}</span>`
+          + statusHtml
+          + `</div>`
+        );
+
+        if (node.children) {
+          for (let i = 0; i < node.children.length; i++) {
+            const child = node.children[i];
+            const childIsLast = i === node.children.length - 1;
+            walk(child, depth + 1, childIsLast, [...prefixes, !childIsLast]);
+          }
+        }
+      }
+
+      walk(BT_TREE, 0, true, []);
+      btContainer.innerHTML = lines.join('');
+    }
+
+    // Render empty tree on load
+    renderBTTree([]);
+
+    // ===== CHAT & STATE =====
+    function addMsg(text, role) {
+      const div = document.createElement('div');
+      div.className = `msg ${role}`;
+      div.textContent = text;
+      messagesEl.appendChild(div);
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+      return div;
+    }
+
+    function updateStatePanel(state) {
+      const textFields = [
+        'session_id', 'customer_name', 'sub_state', 'pain_point',
+        'product_interested', 'tactic', 'objection', 'score_conversation',
+      ];
+      for (const key of textFields) {
+        const el = document.getElementById(`s-${key}`);
+        if (!el) continue;
+        const val = state[key];
+        if (val) { el.textContent = val; el.classList.remove('empty'); }
+        else { el.textContent = '\u2014'; el.classList.add('empty'); }
+      }
+
+      const stateEl = document.getElementById('s-current_state');
+      const cs = state.current_state;
+      if (cs) {
+        const cls = cs === 'I' ? 'badge-i' : cs === 'NI' ? 'badge-ni' : 'badge-ind';
+        stateEl.innerHTML = `<span class="badge ${cls}">${cs}</span>`;
+      }
+
+      const phaseEl = document.getElementById('s-cardone_phase');
+      if (state.cardone_phase) {
+        phaseEl.innerHTML = `<span class="badge badge-phase">${state.cardone_phase}</span>`;
+      }
+
+      const confEl = document.getElementById('s-confidence');
+      if (state.confidence != null) {
+        confEl.textContent = (state.confidence * 100).toFixed(0) + '%';
+        confEl.classList.remove('empty');
+      }
+
+      const niEl = document.getElementById('s-consecutive_ni');
+      niEl.textContent = state.consecutive_ni ?? 0;
+      niEl.classList.remove('empty');
+
+      const termEl = document.getElementById('s-termination');
+      if (state.termination) {
+        termEl.innerHTML = `<span class="badge badge-term">${state.termination}</span>`;
+      } else {
+        termEl.textContent = 'activa';
+        termEl.classList.remove('empty');
+      }
+
+      const injEl = document.getElementById('s-prompt_injection_attempts');
+      injEl.textContent = state.prompt_injection_attempts ?? 0;
+      injEl.classList.remove('empty');
+
+      const treeEl = document.getElementById('s-binary_tree');
+      const tree = state.binary_tree || [];
+      if (tree.length) {
+        treeEl.innerHTML = tree.map(n =>
+          `<div class="tree-node ${n.state}" title="T${n.turn}: ${n.state} (${n.sub_state})">${n.state === 'I' ? 'I' : 'N'}</div>`
+        ).join('');
+      } else {
+        treeEl.innerHTML = '<span class="value empty">\u2014</span>';
+      }
+
+      const metricsEl = document.getElementById('s-metrics');
+      const m = state.metrics;
+      if (m) {
+        metricsEl.innerHTML = `
+          <div class="metric-row"><span>Turnos</span><span class="metric-val">${m.total_turns}</span></div>
+          <div class="metric-row"><span>I / NI</span><span class="metric-val">${m.i_count} / ${m.ni_count}</span></div>
+          <div class="metric-row"><span>Reversion</span><span class="metric-val">${(m.reversion_rate * 100).toFixed(0)}%</span></div>
+        `;
+      }
+
+      const argsEl = document.getElementById('s-used_arguments');
+      const args = state.used_arguments || [];
+      if (args.length) {
+        argsEl.textContent = args.join(', ');
+        argsEl.classList.remove('empty');
+      } else {
+        argsEl.textContent = '\u2014';
+        argsEl.classList.add('empty');
+      }
+
+      // Update BT tree with trace
+      renderBTTree(state.bt_trace || []);
+    }
+
+    async function loadHistory() {
+      if (!sessionId) return;
+      try {
+        const res = await fetch(`${API}/conversation/${sessionId}`);
+        if (!res.ok) {
+          localStorage.removeItem('session_id');
+          localStorage.removeItem('customer_name');
+          sessionId = null;
+          customerName = null;
+          return;
+        }
+        const data = await res.json();
+        customerName = data.customer_name;
+        customerLabel.textContent = customerName;
+        localStorage.setItem('customer_name', customerName);
+        data.messages.forEach(m => addMsg(m.content, m.role === 'user' ? 'user' : 'bot'));
+        updateStatePanel(data);
+      } catch (e) {
+        console.error('Error cargando historial', e);
+      }
+    }
+
+    async function startOutbound(name) {
+      btn.disabled = true;
+      const typing = addMsg('Iniciando conversacion...', 'bot typing');
+      try {
+        const res = await fetch(`${API}/start`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ customer_name: name })
+        });
+        const data = await res.json();
+        typing.remove();
+        addMsg(data.response, 'bot');
+        sessionId = data.session_id;
+        localStorage.setItem('session_id', sessionId);
+        localStorage.setItem('customer_name', name);
+        customerLabel.textContent = name;
+        updateStatePanel(data.state);
+      } catch (e) {
+        typing.remove();
+        addMsg('Error al iniciar conversacion.', 'bot');
+      }
+      btn.disabled = false;
+      input.focus();
+    }
+
+    async function sendMessage() {
+      const text = input.value.trim();
+      if (!text) return;
+      input.value = '';
+      btn.disabled = true;
+      addMsg(text, 'user');
+      const typing = addMsg('Escribiendo...', 'bot typing');
+
+      try {
+        const res = await fetch(`${API}/chat`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: text, session_id: sessionId, customer_name: customerName })
+        });
+        const data = await res.json();
+        typing.remove();
+        addMsg(data.response, 'bot');
+
+        if (!sessionId) {
+          sessionId = data.session_id;
+          localStorage.setItem('session_id', sessionId);
+        }
+        customerLabel.textContent = data.customer_name;
+        updateStatePanel(data.state);
+
+        if (data.state.termination) {
+          addMsg(`Conversacion finalizada: ${data.state.termination}`, 'system');
+          input.disabled = true;
+          btn.disabled = true;
+          return;
+        }
+      } catch (e) {
+        typing.remove();
+        addMsg('Error al conectar con el servidor.', 'bot');
+      }
+      btn.disabled = false;
+      input.focus();
+    }
+
+    async function init() {
+      if (sessionId && customerName) {
+        modal.classList.add('hidden');
+        customerLabel.textContent = customerName;
+        await loadHistory();
+      } else {
+        modal.classList.remove('hidden');
+        nameInput.focus();
+      }
+    }
+
+    nameBtn.addEventListener('click', () => {
+      const name = nameInput.value.trim();
+      if (!name) return;
+      customerName = name;
+      modal.classList.add('hidden');
+      startOutbound(name);
+    });
+    nameInput.addEventListener('keydown', e => { if (e.key === 'Enter') nameBtn.click(); });
+    document.getElementById('new-chat-btn').addEventListener('click', () => {
+      if (!confirm('Iniciar una nueva conversacion?')) return;
+      localStorage.removeItem('session_id');
+      localStorage.removeItem('customer_name');
+      location.reload();
+    });
+    btn.addEventListener('click', sendMessage);
+    input.addEventListener('keydown', e => { if (e.key === 'Enter') sendMessage(); });
+    init();
+  </script>
+</body>
+</html>

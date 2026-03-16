@@ -1,0 +1,64 @@
+## Descripción del Proyecto
+
+Este proyecto construye un agente de IA de ventas outbound para Movistar Argentina.
+El agente contacta clientes potenciales a través de WhatsApp con el objetivo de
+vender abonos de telefonía, manejando el proceso de ventas completo: desde la
+apertura hasta el cierre, incluyendo el manejo de objeciones, una vez el cliente haya aceptado la oferta
+el cierre comercial se deriva con un agente humano.
+
+El agente es outbound: él inicia la conversación a traves de un primer mensaje hardcodeado, no el cliente.
+
+El alcance de este proyecto es exclusivamente la construcción del agente.
+La integración con WhatsApp está fuera de scope.
+
+---
+## Stack Técnico
+
+- Orquestación: LangGraph (Python)
+- LLM: Claude API (Anthropic) — claude-sonnet-4-6 para generación,
+  claude-haiku-4-5 para clasificación
+- Canal: WhatsApp Web Scraping(integración externa, no incluida aquí)
+- Base de datos: MongoDB Atals (historial de conversaciones)
+---
+---
+
+## Problema Central: Los LLMs son Modelos Pasivos
+
+Los agentes de inteligencia artificial basados en LLM presentan un problema estructural cuando se aplican a ventas en frío: son reactivos por naturaleza. Responden a lo que el cliente dice, pero no conducen activamente la conversación hacia un objetivo comercial.
+Esto genera dos limitaciones principales. En primer lugar, el cliente puede desviar la conversación hacia cualquier tema y el agente simplemente lo sigue. En segundo lugar, el agente no posee un criterio propio para decidir cuándo insistir, cuándo ceder o cuándo avanzar hacia el cierre.
+El resultado es un chatbot que responde correctamente, pero no vende.
+Un vendedor experimentado no solo responde. Interpreta señales, actualiza continuamente su modelo mental del cliente y decide qué acción maximiza la probabilidad de cierre en cada momento de la conversación.
+El modelo CBST (Conversation Binary State Tree) surge precisamente de la necesidad de representar formalmente ese proceso. Su objetivo es modelar el estado emocional y comercial del cliente a lo largo de una conversación de ventas, permitiendo que un agente tome decisiones tácticas en cada turno basadas en información estructurada y no únicamente en el último mensaje del usuario.
+De este modo, el agente puede utilizar la información disponible para conducir la conversación hacia el cierre, siguiendo un proceso definido [ver documentación PROCESOS-DE-CARDONE.txt], y sabiendo con claridad qué acción corresponde ante cada tipo de respuesta del cliente.
+En esencia, lo que se busca es transformar un agente puramente reactivo en un agente con comportamiento activo: uno capaz de interpretar el contexto, actualizar el estado de la conversación y elegir deliberadamente la siguiente acción que maximice la probabilidad de venta.
+
+---
+
+Para lograr esto hacemos uso de tres conceptos principales:
+
+- BINARY-TREE: se basa en un modelo mental que nos ayuda a entender mejor como evoluciona una conversacion
+basandonos en una estructura conocida como arbol binario, el cual nos permite mapear el historial de mensajes de una conversacion datos dos estados principales
+INTERES NO_INTERES (donde cada uno tiene subestados internos) y realizar analogias con el comportamiento
+de la estructura de arboles binarios. [ver documentacion de BINARY-TREE.txt]
+- BEHAVIOUR-TREE: se basa en otro modelo para tomar el estado e informacion actual de la conversacion para decirle al modelo que camino tomar 
+y que respuesta darle al cliente teniendo en cuenta el objetivo prinpipal del agente. Es basicamente el motor de decisión del agente [ver documentacion de BEHAVIOUR-TREE.txt]
+- BLACKBOARD: Estado compartido entre todos los nodos del sistema. Contiene el perfil del cliente, el historial de estados, el estado de
+ejecución del agente, y la táctica del próximo mensaje.
+Es el **puente** entre los dos árboles. [ver documentacion BLACBOARD.txt]
+
+**Relación entre los componentes:**
+El árbol binario es el INPUT del Behaviour Tree.
+El Behaviour Tree lee ese input y decide una acción.
+El resultado de la acción agrega un nuevo nodo al árbol binario.
+
+
+## Propiedad Crítica del Sistema
+
+El sistema es garantizadamente terminante: toda conversación termina
+en CIERRE DE VENTA, PODA (conversación sin éxito) o HANDOFF (transferencia a
+vendedor humano). Nunca en loop infinito.
+
+RESUMEN:
+En resumen estamos resolviendo el problema haciendo foco en dos estados, uno de memoria corta
+que identifica si el ultimo mensaje del cliente fue interes o no interes y un estado de memoria larga 
+que tiene en cuenta el proceso de ventas de Cardone por el que debemos llevar a nuestro cliente

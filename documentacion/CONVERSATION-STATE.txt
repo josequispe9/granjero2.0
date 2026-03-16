@@ -1,0 +1,21 @@
+Teniendo en cuenta los analisis anteriores, este es un borrador del conversationState que 
+presento, puedes ayudarme a completarlo/corregirlo para mejorarlo
+
+variables a tener en cuenta
+
+takeHuman = boolean #Es para saber quien tiene el control de la conversacion
+paint_poit = str #Es el dolor principal del cliente
+cardone_phase = str #Es la fase del proceso de ventas de cardone en la que se encuetra el cliente, es un subestado de engagement_state
+objetion = str #Es la objecion planteada por el cliente, es un subestado de current_state
+current_state = str #El uno de los estados principales con el que se clasifico el ultimo mensaje del cliente, INTERES, INDETERMINADO, NO_INTERES
+product_interested = str #Es el plan en el que el cliente mostro estar interesado.
+binary_tree = [] #Es el arbol binario representado como una sucesion de los estados y subestados anteriores
+prompt_injection_attempts = int #Es el numero de veces que el cliente intento hacer prompt injection
+bought = boolean #Indica si el cliente compró o no compró
+SCORE_CONVERSATION = str #Mide que tan probable es el cierre de venta en la conversacion [N0_COMPRO, MUY_BAJO, BAJO, NEUTRO, MEDIO, ALTO, MUY_ALTO, COMPRO]
+
+##Varibles para el manejo de recontactos (en caso de que haya olvidado de responder)
+asleep = boolean #Es para saber si el cliente no respondio despues de un determinado tiempo asi retomar la conversacion
+
+##Variables con informacion personal del cliente client_profile
+name = str #Es el nombre del cliente

@@ -1,0 +1,133 @@
+estos son los planes de fibra óptica para individuos. 
+
+{
+  "segmento": "individuos_fibra",
+
+  "condiciones_comerciales": {
+    "venta_requiere_portabilidad": true,
+    "mes_gratis_fibra": 1,
+    "duracion_promocion_meses": 6,
+    "promo_fibra_meses_pago": 5,
+    "movistar_tv_mes_gratis_si_combo": true,
+    "nota_zonas_competencia": "Un asesor debe verificar si la dirección del cliente pertenece a zona de alta competencia (zonas críticas)."
+  },
+
+  "planes_internet": [
+
+    {
+      "plan_id": "fibra_100mb_critica",
+      "velocidad_mb": 100,
+      "zona": "alta_competencia",
+      "precio_full": 54847,
+      "descuento_porcentaje": 67,
+      "precio_final": 18100
+    },
+
+    {
+      "plan_id": "fibra_300mb_critica",
+      "velocidad_mb": 300,
+      "zona": "alta_competencia",
+      "precio_full": 66200,
+      "descuento_porcentaje": 67,
+      "precio_final": 21846
+    },
+
+    {
+      "plan_id": "fibra_600mb_critica",
+      "velocidad_mb": 600,
+      "zona": "alta_competencia",
+      "precio_full": 68900,
+      "descuento_porcentaje": 64.7,
+      "precio_final": 24294
+    },
+
+    {
+      "plan_id": "fibra_300mb_resto",
+      "velocidad_mb": 300,
+      "zona": "resto_zonas",
+      "precio_full": 66200,
+      "descuento_porcentaje": 63.3,
+      "precio_final": 24295
+    },
+
+    {
+      "plan_id": "fibra_600mb_resto",
+      "velocidad_mb": 600,
+      "zona": "resto_zonas",
+      "precio_full": 68900,
+      "descuento_porcentaje": 60,
+      "precio_final": 27560
+    },
+
+    {
+      "plan_id": "fibra_1gb_resto",
+      "velocidad_mb": 1000,
+      "zona": "resto_zonas",
+      "precio_full": 74400,
+      "descuento_porcentaje": 55,
+      "precio_final": 33480
+    }
+
+  ],
+
+  "planes_tv": [
+
+    {
+      "plan_id": "tv_digital_combo",
+      "precio_final": 11900,
+      "canales": 39,
+      "incluye": []
+    },
+
+    {
+      "plan_id": "tv_digital_combo_disney",
+      "precio_final": 22200,
+      "canales": 39,
+      "incluye": [
+        "Disney+",
+        "Star+"
+      ]
+    },
+
+    {
+      "plan_id": "tv_max",
+      "precio_full": 26000,
+      "descuento_porcentaje": 40,
+      "duracion_descuento_meses": 6,
+      "precio_final": 15600,
+      "canales": 102,
+      "incluye": []
+    },
+
+    {
+      "plan_id": "tv_max_combo_disney",
+      "precio_full": 32700,
+      "descuento_porcentaje": 15,
+      "duracion_descuento_meses": 6,
+      "precio_final": 27795,
+      "canales": 102,
+      "incluye": [
+        "Disney+",
+        "Star+"
+      ]
+    }
+
+  ],
+
+  "equipamiento": {
+    "deco_movistar_tv": {
+      "precio_full": 5400,
+      "descuento_porcentaje": 40,
+      "duracion_descuento_meses": 6,
+      "precio_final": 3240
+    },
+    "ampliacion_wifi": 3000
+  },
+
+  "notas_operativas": [
+    "Si el cliente posee Smart TV se debe verificar si puede descargar la app Movistar TV.",
+    "Si no puede instalar la app necesitará decodificador.",
+    "El decodificador tiene costo adicional.",
+    "Existen centrales bloqueadas para carga que deben verificarse antes de vender."
+  ]
+}

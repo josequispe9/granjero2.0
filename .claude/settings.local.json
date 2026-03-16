@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(docker compose:*)",
+      "Bash(find /mnt/c/Users/qjose/Desktop/GRANJA -name \"Dockerfile\" -o -name \"requirements.txt\" -o -name \"package.json\" | xargs ls -la 2>/dev/null)",
+      "Bash(docker-compose up:*)",
+      "Bash(curl -s http://localhost:8000/health | python3 -m json.tool)",
+      "Bash(curl -s -X POST http://localhost:8000/start \\\\\n  -H 'Content-Type: application/json' \\\\\n  -d '{\"customer_name\": \"Carlos\"}' | python3 -m json.tool)",
+      "Bash(curl -s -X POST http://localhost:8000/chat \\\\\n  -H 'Content-Type: application/json' \\\\\n  -d '{\"message\": \"La verdad que anda bastante mal, se me corta todo el tiempo\", \"session_id\": \"bc181bf6-df66-4b01-98cc-4f81cf620022\"}' | python3 -m json.tool)",
+      "Bash(curl -s -X POST http://localhost:8000/chat \\\\\n  -H 'Content-Type: application/json' \\\\\n  -d '{\"message\": \"La verdad que anda bastante mal, se me corta todo el tiempo\", \"session_id\": \"dfdf7f6f-3f03-47f0-bfeb-4edb82810753\"}' | python3 -m json.tool)",
+      "Bash(sleep 3 && curl -s -X POST http://localhost:8000/start \\\\\n  -H 'Content-Type: application/json' \\\\\n  -d '{\"customer_name\": \"Carlos\"}' | python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(d['session_id']\\)\")",
+      "Bash(curl -s -X POST http://localhost:8000/chat \\\\\n  -H 'Content-Type: application/json' \\\\\n  -d '{\"message\": \"La verdad que anda bastante mal, se me corta todo el tiempo\", \"session_id\": \"14f3ff71-91a6-42e0-b6dc-813e0787a8b7\"}' | python3 -m json.tool)",
+      "Bash(sleep 3 && curl -s -X POST http://localhost:8000/start \\\\\n  -H 'Content-Type: application/json' \\\\\n  -d '{\"customer_name\": \"Carlos\"}' | python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); sid=d['session_id']; print\\(sid\\); open\\('/tmp/sid','w'\\).write\\(sid\\)\")",
+      "Bash(docker ps:*)",
+      "Bash(docker exec:*)",
+      "Bash(docker rm:*)",
+      "Bash(curl:*)"
+    ]
+  }
+}

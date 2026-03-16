@@ -1,0 +1,32 @@
+Los pasos de Cardone son los subestados de INTERES
+I — Interesado
+├── saludos
+├── descubrimiento
+├── eleccion
+├── oferta
+└── conclusion  →  CIERRE
+
+Cómo se integra cada paso
+Paso 1 — Saludo
+En Cardone este paso no es trivial. No es solo cortesía, es establecer rapport y tomar control de la conversación desde el primer mensaje. El vendedor marca el tono.
+En el grafo: el agente abre él la conversación, no espera input. El primer mensaje es generado en base al perfil del lead. El estado arranca en I(pasivo) y el objetivo del agente en este paso es simple: que el cliente responda algo, lo que sea. Que no corte.
+La transición para avanzar al paso 2 es detectar cualquier respuesta que no sea rechazo duro.
+
+Paso 2 — Determinación de deseos y necesidades
+Este es el paso más crítico para la venta en frío y el más ignorado por los agentes de IA. Cardone dice que no podés vender lo que no sabés que el cliente necesita.
+En el grafo: este paso es un bucle de descubrimiento. El agente hace preguntas estratégicas para poblar el client_profile. El estado objetivo es I(explorando). Si aparece un NI acá, es casi siempre objecion_necesidad porque el cliente dice que no necesita lo que todavía no entiende que necesita.
+La transición para avanzar al paso 3 requiere que client_profile tenga al menos un pain point identificado. Sin eso, no se avanza.
+
+Paso 3 — Elección del producto
+Cardone dice que el vendedor elige el producto para el cliente, no le pregunta cuál quiere. Usa lo que aprendió en el paso 2 para hacer una recomendación específica y personalizada.
+En el grafo: el agente usa client_profile para seleccionar qué aspecto del producto presentar. No presenta todo, presenta lo relevante para ese cliente específico. El estado objetivo es I(evaluando). Las objeciones acá son típicamente objecion_precio o objecion_necesidad más refinada.
+La transición para avanzar al paso 4 es detectar que el cliente está comparando o haciendo preguntas de implementación.
+
+Paso 4 — Hacer la oferta
+Cardone es muy específico acá: la oferta tiene que ser concreta, con número, con fecha, con condiciones. No vaga. Y el vendedor tiene que hacerla con convicción, no como pregunta.
+En el grafo: este es el paso donde el agente más necesita el next_objective bien definido. El objetivo es explícito: presentar la oferta completa con precio y próximo paso. El estado objetivo sigue siendo I(evaluando) o I(listo). Si aparece NI acá es casi siempre objecion_precio o objecion_autoridad.
+Una objeción en el paso 4 no retrocede al paso 2. Resolvés la objeción y volvés a hacer la oferta. Cardone dice que el vendedor promedio hace la oferta una vez. El vendedor top la hace hasta cinco veces con distintos enfoques.
+
+Paso 5 — Conclusión
+Cardone dice que la mayoría de los vendedores fallan acá no porque no puedan cerrar sino porque no intentan el cierre. Esperan que el cliente diga "quiero comprar" en lugar de pedirlo directamente.
+En el grafo: cuando el estado llega a I(listo), el nodo de estrategia debe cambiar completamente su objetivo. Ya no vende más. Hace la pregunta de cierre directa y concreta: "¿Arrancamos el proceso de alta esta semana o la próxima?". Si aparece un NI en este punto es objecion_tiempo casi siempre, que es la objeción más manejable porque el interés ya está.

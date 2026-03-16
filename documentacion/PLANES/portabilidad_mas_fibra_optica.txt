@@ -1,0 +1,38 @@
+esta es la oferta que se le debe hacer al cliente, si compra fibra la portabilidad de una linea tiene promo 
+
+{
+  "promo_id": "bundle_fibra_portabilidad_4gb",
+  "segmento": "individuos",
+  "tipo_promocion": "bundle_fibra_movil",
+
+  "condiciones": {
+    "gestion_totalizada": true,
+    "max_lineas_aplicables": 1,
+    "mismo_titular_fibra_movil": true,
+    "operador_origen_permitido": ["Claro"],
+    "origen_linea": ["prepago", "pospago"],
+    "requiere_contratacion": {
+      "fibra": "cualquier_velocidad",
+      "portabilidad_movil": "plan_4gb"
+    }
+  },
+
+  "restricciones_crediticias": {
+    "scores_no_permitidos": [351, 352, 353],
+    "estado": "suspendido_temporalmente",
+    "fecha_actualizacion": "2026-01-26"
+  },
+
+  "beneficios": {
+    "descuento_factura_hogar": 4000,
+    "unidad_descuento": "ARS_mensual",
+    "gigas_extra_linea_movil": 4,
+    "gigas_promocionales": false
+  },
+
+  "notas_operativas": [
+    "La portabilidad y la fibra deben estar a nombre del mismo titular.",
+    "La promoción solo puede aplicarse a una línea móvil.",
+    "La gestión debe cargarse como totalización."
+  ]
+}

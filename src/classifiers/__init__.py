@@ -1,0 +1,4 @@
+from src.classifiers.state_classifier import classify_state
+from src.classifiers.phase_classifier import classify_phase
+from src.classifiers.injection_classifier import classify_injection
+from src.classifiers.revision_classifier import classify_revision
