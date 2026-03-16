@@ -23,8 +23,26 @@ class Blackboard(TypedDict):
     # --- Binary tree ---
     binary_tree: list[dict]     # lista plana de nodos {state, sub_state, turn}
 
+    # --- Competencia / Sondeo ---
+    competitor_provider: str | None      # "Claro", "Personal", etc.
+    competitor_service_type: str | None  # "movil" | "fibra" | "ambos"
+    competitor_plan: str | None          # "10GB", "100mb fibra"
+    competitor_price: int | None         # precio mensual
+    competitor_satisfaction: str | None  # "conforme" | "quejas" | "neutro"
+    sondeo_turns: int                    # contador de turnos de sondeo
+    comparison_result: dict | None       # salida del comparador
+
+    # --- Promo seleccionada ---
+    selected_promo_id: str | None
+
+    # --- Producto a vender ---
+    product_to_sell: str | None          # "portabilidad" | "fibra" | "bundle" | None
+    products_rejected: list[str]         # productos rechazados: ["portabilidad"], ["fibra"], etc.
+    offer_stage: str                     # "primary" | "pivot" | "bundle"
+    cobertura_pendiente: bool            # True = derivar a backoffice para verificar cobertura fibra
+
     # --- Objeciones ---
-    objection: str | None       # precio | tiempo | necesidad | autoridad | rechazo_duro
+    objection: str | None       # precio | tiempo | necesidad | autoridad | rechazo_duro | competencia
     used_arguments: list[str]   # tacticas ya usadas (no repetir)
     consecutive_ni: int
     consecutive_ind: int

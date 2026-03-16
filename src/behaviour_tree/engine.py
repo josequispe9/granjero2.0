@@ -9,19 +9,23 @@ from src.behaviour_tree.status import Status
 from src.behaviour_tree.conditions import (
     estado_I, estado_NI, estado_IND,
     subestado_precio, subestado_tiempo, subestado_necesidad, subestado_autoridad,
-    subestado_rechazo_duro,
+    subestado_competencia, subestado_rechazo_duro,
+    producto_no_rechazado, puede_pivotar, puede_bundle,
 )
 from src.behaviour_tree.actions import (
     avanzar_fase, pedir_confirmacion,
     reencuadrar_valor, mostrar_roi, caso_exito, prueba_piloto,
     inicio_minimo, fecha_flexible, urgencia,
     revelar_pain_point, pain_point_oculto,
+    sondear_competencia, comparar_competencia, ventaja_exclusiva,
+    pivotar_producto, ofrecer_bundle,
     redirigir_decisor, agendar_llamada,
     rechazo_duro_fin, fallback_fin,
 )
 from src.behaviour_tree.decorators import (
     max_intentos_dinamico, confianza_70, confianza_75,
     slots_completos, max_1_consecutivo,
+    sondeo_insuficiente, sondeo_suficiente,
 )
 
 
@@ -174,6 +178,47 @@ def _build_tree() -> Node:
         ], "sel_nec_tac", "Tacticas"), "d_max_nec", "max_intentos"),
     ], "seq_necesidad", "Obj Necesidad")
 
+    # Objeciones de competencia — con routing de producto
+    #
+    # Flujo:
+    # 1. Sondeo (2 turnos minimo)
+    # 2. Vender producto primario (comparar + ventaja)
+    # 3. Si falla → pivot al otro producto
+    # 4. Si ambos fallan → ofrecer bundle
+    producto_primario = Sequence([
+        Condition(producto_no_rechazado, "c_prod_ok", "producto_no_rechazado"),
+        Selector([
+            Decorator(max_1_consecutivo,
+                Action(comparar_competencia, "a_comparar", "comparar_competencia"),
+                "d_max1_comparar", "max1"),
+            Action(ventaja_exclusiva, "a_ventaja", "ventaja_exclusiva"),
+        ], "sel_prod_tac", "Tacticas Producto"),
+    ], "seq_prod_primario", "Producto Actual")
+
+    pivot = Sequence([
+        Condition(puede_pivotar, "c_puede_pivot", "puede_pivotar"),
+        Action(pivotar_producto, "a_pivotar", "pivotar_producto"),
+    ], "seq_pivot", "Pivot Producto")
+
+    bundle = Sequence([
+        Condition(puede_bundle, "c_puede_bundle", "puede_bundle"),
+        Action(ofrecer_bundle, "a_bundle", "ofrecer_bundle"),
+    ], "seq_bundle", "Ofrecer Bundle")
+
+    obj_competencia = Sequence([
+        Condition(subestado_competencia, "c_competencia", "sub_competencia"),
+        Selector([
+            Decorator(sondeo_insuficiente,
+                Action(sondear_competencia, "a_sondear", "sondear_competencia"),
+                "d_sondeo_insuf", "sondeo_insuficiente"),
+            Decorator(sondeo_suficiente, Selector([
+                producto_primario,
+                pivot,
+                bundle,
+            ], "sel_venta", "Venta por Producto"), "d_sondeo_suf", "sondeo_suficiente"),
+        ], "sel_competencia", "Sondeo/Comparar"),
+    ], "seq_competencia", "Obj Competencia")
+
     # Objeciones de autoridad
     obj_autoridad = Sequence([
         Condition(subestado_autoridad, "c_autoridad", "sub_autoridad"),
@@ -198,6 +243,7 @@ def _build_tree() -> Node:
             obj_precio,
             obj_tiempo,
             obj_necesidad,
+            obj_competencia,
             obj_autoridad,
             rechazo,
         ], "sel_objs", "Tipo Objecion"),

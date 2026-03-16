@@ -36,6 +36,22 @@
 
     /* Panel de estado (derecha) */
     #state-panel { background: white; width: 240px; height: 700px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); display: flex; flex-direction: column; overflow: hidden; flex-shrink: 0; }
+
+    /* Panel de promos (extremo derecho) */
+    #promo-panel { background: white; width: 280px; height: 700px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); display: flex; flex-direction: column; overflow: hidden; flex-shrink: 0; }
+    #promo-panel h3 { background: #6c3483; padding: 12px 14px; font-size: 11px; color: #fff; border-bottom: 1px solid #5b2c6f; letter-spacing: 0.5px; text-transform: uppercase; }
+    #promo-fields { padding: 10px 14px; display: flex; flex-direction: column; gap: 6px; flex: 1; overflow-y: auto; }
+    #promo-select { width: 100%; padding: 8px 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 12px; outline: none; margin-bottom: 6px; }
+    #promo-select:focus { border-color: #6c3483; }
+    .promo-section { border-top: 1px solid #f0f2f5; padding-top: 6px; margin-top: 2px; }
+    .promo-section-title { font-size: 10px; color: #6c3483; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+    .promo-row { display: flex; justify-content: space-between; font-size: 11px; padding: 1px 0; }
+    .promo-row .promo-label { color: #888; }
+    .promo-row .promo-val { font-weight: 600; color: #333; }
+    .promo-badge { display: inline-block; padding: 1px 7px; border-radius: 10px; font-size: 10px; font-weight: 600; }
+    .promo-badge-green { background: #d4edda; color: #155724; }
+    .promo-badge-blue { background: #e8f0fe; color: #1a73e8; }
+    .promo-ventaja { font-size: 10px; color: #155724; padding: 1px 0; }
     #state-panel h3 { background: #f8f9fa; padding: 12px 14px; font-size: 11px; color: #555; border-bottom: 1px solid #eee; letter-spacing: 0.5px; text-transform: uppercase; }
     #state-fields { padding: 10px 14px; display: flex; flex-direction: column; gap: 8px; flex: 1; overflow-y: auto; }
     .state-field label { display: block; font-size: 9px; color: #999; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 1px; }
@@ -158,6 +174,20 @@
     </div>
   </div>
 
+  <!-- Panel de promos (extremo derecho) -->
+  <div id="promo-panel">
+    <h3>Planes Activos</h3>
+    <div id="promo-fields">
+      <div style="font-size:10px;color:#6c3483;font-weight:700;margin-bottom:2px">PROMO PORTABILIDAD DEL DIA</div>
+      <select id="promo-select"><option value="">-- Seleccionar promo --</option></select>
+      <div id="promo-porta"></div>
+      <div id="promo-fibra"></div>
+      <div id="promo-bundle"></div>
+      <div id="promo-competitor"></div>
+      <div id="promo-comparison"></div>
+    </div>
+  </div>
+
   <script>
     const API = 'http://localhost:8000';
     const messagesEl = document.getElementById('messages');
@@ -171,6 +201,8 @@
 
     let sessionId = localStorage.getItem('session_id');
     let customerName = localStorage.getItem('customer_name');
+    let selectedPromoId = localStorage.getItem('selected_promo_id') || '';
+    let currentPromoData = null;
 
     // ===== BT STATIC TREE DEFINITION =====
     // Mirrors the Python _build_tree() structure exactly
@@ -228,6 +260,35 @@
                     { id: 'a_revelar', type: 'action', label: 'revelar_pain_point' },
                   ]},
                   { id: 'a_oculto', type: 'action', label: 'pain_point_oculto' },
+                ]},
+              ]},
+            ]},
+            { id: 'seq_competencia', type: 'sequence', label: 'Obj Competencia', children: [
+              { id: 'c_competencia', type: 'condition', label: 'sub_competencia' },
+              { id: 'sel_competencia', type: 'selector', label: 'Sondeo/Comparar', children: [
+                { id: 'd_sondeo_insuf', type: 'decorator', label: 'sondeo_insuficiente', children: [
+                  { id: 'a_sondear', type: 'action', label: 'sondear_competencia' },
+                ]},
+                { id: 'd_sondeo_suf', type: 'decorator', label: 'sondeo_suficiente', children: [
+                  { id: 'sel_venta', type: 'selector', label: 'Venta por Producto', children: [
+                    { id: 'seq_prod_primario', type: 'sequence', label: 'Producto Actual', children: [
+                      { id: 'c_prod_ok', type: 'condition', label: 'producto_no_rechazado' },
+                      { id: 'sel_prod_tac', type: 'selector', label: 'Tacticas Producto', children: [
+                        { id: 'd_max1_comparar', type: 'decorator', label: 'max1', children: [
+                          { id: 'a_comparar', type: 'action', label: 'comparar_competencia' },
+                        ]},
+                        { id: 'a_ventaja', type: 'action', label: 'ventaja_exclusiva' },
+                      ]},
+                    ]},
+                    { id: 'seq_pivot', type: 'sequence', label: 'Pivot Producto', children: [
+                      { id: 'c_puede_pivot', type: 'condition', label: 'puede_pivotar' },
+                      { id: 'a_pivotar', type: 'action', label: 'pivotar_producto' },
+                    ]},
+                    { id: 'seq_bundle', type: 'sequence', label: 'Ofrecer Bundle', children: [
+                      { id: 'c_puede_bundle', type: 'condition', label: 'puede_bundle' },
+                      { id: 'a_bundle', type: 'action', label: 'ofrecer_bundle' },
+                    ]},
+                  ]},
                 ]},
               ]},
             ]},
@@ -409,6 +470,9 @@
 
       // Update BT tree with trace
       renderBTTree(state.bt_trace || []);
+
+      // Update promo panel
+      updatePromoPanel(state);
     }
 
     async function loadHistory() {
@@ -440,7 +504,7 @@
         const res = await fetch(`${API}/start`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ customer_name: name })
+          body: JSON.stringify({ customer_name: name, selected_promo_id: selectedPromoId || null })
         });
         const data = await res.json();
         typing.remove();
@@ -470,7 +534,7 @@
         const res = await fetch(`${API}/chat`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ message: text, session_id: sessionId, customer_name: customerName })
+          body: JSON.stringify({ message: text, session_id: sessionId, customer_name: customerName, selected_promo_id: selectedPromoId || null })
         });
         const data = await res.json();
         typing.remove();
@@ -497,7 +561,172 @@
       input.focus();
     }
 
+    // ===== PROMO PANEL =====
+    const promoSelect = document.getElementById('promo-select');
+    const promoPorta = document.getElementById('promo-porta');
+    const promoFibra = document.getElementById('promo-fibra');
+    const promoBundle = document.getElementById('promo-bundle');
+    const promoCompetitor = document.getElementById('promo-competitor');
+    const promoComparison = document.getElementById('promo-comparison');
+
+    let fibraData = null;
+    let bundleData = null;
+
+    async function loadPromos() {
+      try {
+        // Cargar lista de promos portabilidad
+        const res = await fetch(`${API}/promos`);
+        const promos = await res.json();
+        promos.forEach(p => {
+          const opt = document.createElement('option');
+          opt.value = p.id;
+          opt.textContent = p.label;
+          promoSelect.appendChild(opt);
+        });
+
+        // Cargar fibra (siempre los mismos)
+        const fibraRes = await fetch(`${API}/planes-fibra`);
+        fibraData = await fibraRes.json();
+        renderFibra(fibraData);
+
+        // Cargar bundle info
+        const bundleRes = await fetch(`${API}/bundle-info`);
+        bundleData = await bundleRes.json();
+        renderBundle(bundleData);
+
+        // Restaurar promo seleccionada
+        if (selectedPromoId) {
+          promoSelect.value = selectedPromoId;
+          await onPromoChange();
+        }
+      } catch (e) { console.error('Error cargando promos', e); }
+    }
+
+    async function onPromoChange() {
+      const promoId = promoSelect.value;
+      selectedPromoId = promoId;
+      localStorage.setItem('selected_promo_id', promoId);
+      if (!promoId) {
+        promoPorta.innerHTML = '';
+        currentPromoData = null;
+        return;
+      }
+      try {
+        // GET simple para cargar datos de la promo
+        const res = await fetch(`${API}/promo/${promoId}`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        currentPromoData = data;
+        renderPorta(data);
+
+        // Si hay sesion activa, persistir seleccion
+        if (sessionId) {
+          fetch(`${API}/select-promo`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ session_id: sessionId, promo_id: promoId })
+          }).catch(() => {});
+        }
+      } catch (e) {
+        console.error('Error cargando promo', e);
+        promoPorta.innerHTML = '<div style="color:#dc3545;font-size:11px;padding:4px">Error cargando promo</div>';
+      }
+    }
+
+    function renderPorta(data) {
+      if (!data) { promoPorta.innerHTML = ''; return; }
+      let html = '<div class="promo-section"><div class="promo-section-title">Portabilidad</div>';
+      html += `<div class="promo-row"><span class="promo-label">Descuento</span><span class="promo-badge promo-badge-green">${data.porcentaje_descuento}% x${data.duracion_descuento_meses}m</span></div>`;
+      for (const plan of (data.planes || [])) {
+        let extra = '';
+        if (plan.roaming) extra = ` +${plan.roaming.datos_incluidos_gb}GB roam`;
+        html += `<div class="promo-row"><span class="promo-label">${plan.datos_gb}GB${extra}</span><span class="promo-val">$${plan.precio_final.toLocaleString()}/mes</span></div>`;
+      }
+      for (const b of (data.beneficios_generales || []).slice(0, 3)) {
+        html += `<div class="promo-ventaja">${b.split(':')[0]}</div>`;
+      }
+      html += '</div>';
+      promoPorta.innerHTML = html;
+    }
+
+    function renderFibra(data) {
+      if (!data) return;
+      let html = '<div class="promo-section"><div class="promo-section-title">Fibra Optica</div>';
+      for (const plan of (data.planes || [])) {
+        const zona = plan.zona === 'alta_competencia' ? ' (crit)' : '';
+        html += `<div class="promo-row"><span class="promo-label">${plan.velocidad_mb}Mb${zona}</span><span class="promo-val">$${plan.precio_final.toLocaleString()}/mes</span></div>`;
+      }
+      html += '</div>';
+      promoFibra.innerHTML = html;
+    }
+
+    function renderBundle(data) {
+      if (!data) return;
+      const b = data.beneficios || {};
+      let html = '<div class="promo-section"><div class="promo-section-title">Bundle Porta + Fibra</div>';
+      html += `<div class="promo-ventaja">Ahorro $${(b.descuento_factura_hogar || 0).toLocaleString()}/mes + ${b.gigas_extra_linea_movil || 0}GB extra</div>`;
+      const cond = data.condiciones || {};
+      if (cond.operador_origen_permitido) html += `<div class="promo-ventaja">Solo desde: ${cond.operador_origen_permitido.join(', ')}</div>`;
+      html += '</div>';
+      promoBundle.innerHTML = html;
+    }
+
+    function updatePromoPanel(state) {
+      // Seccion producto vendiendo
+      const prodMap = {portabilidad: 'Portabilidad', fibra: 'Fibra Optica', bundle: 'Bundle'};
+      const stageMap = {primary: 'Primario', pivot: 'Pivot', bundle: 'Bundle'};
+      let prodHtml = '';
+      if (state.product_to_sell) {
+        prodHtml = '<div class="promo-section"><div class="promo-section-title">Vendiendo</div>';
+        prodHtml += `<div class="promo-row"><span class="promo-label">Producto</span><span class="promo-badge promo-badge-blue">${prodMap[state.product_to_sell] || state.product_to_sell}</span></div>`;
+        if (state.offer_stage && state.offer_stage !== 'primary') {
+          prodHtml += `<div class="promo-row"><span class="promo-label">Etapa</span><span class="promo-badge promo-badge-green">${stageMap[state.offer_stage] || state.offer_stage}</span></div>`;
+        }
+        const rej = state.products_rejected || [];
+        if (rej.length) {
+          prodHtml += `<div class="promo-row"><span class="promo-label">Rechazados</span><span class="promo-val" style="color:#dc3545">${rej.map(r => prodMap[r] || r).join(', ')}</span></div>`;
+        }
+        prodHtml += '</div>';
+      }
+
+      // Seccion competidor
+      let compHtml = '';
+      if (state.competitor_provider || state.competitor_plan || state.competitor_price || state.competitor_service_type) {
+        compHtml = '<div class="promo-section"><div class="promo-section-title">Servicio Competidor</div>';
+        if (state.competitor_provider) compHtml += `<div class="promo-row"><span class="promo-label">Proveedor</span><span class="promo-val">${state.competitor_provider}</span></div>`;
+        const stMap = {movil: 'Celular/Movil', fibra: 'Internet/Fibra', ambos: 'Movil + Fibra'};
+        if (state.competitor_service_type) compHtml += `<div class="promo-row"><span class="promo-label">Tipo</span><span class="promo-badge promo-badge-blue">${stMap[state.competitor_service_type] || state.competitor_service_type}</span></div>`;
+        if (state.competitor_plan) compHtml += `<div class="promo-row"><span class="promo-label">Plan</span><span class="promo-val">${state.competitor_plan}</span></div>`;
+        if (state.competitor_price) compHtml += `<div class="promo-row"><span class="promo-label">Precio</span><span class="promo-val">$${state.competitor_price.toLocaleString()}/mes</span></div>`;
+        if (state.competitor_satisfaction) compHtml += `<div class="promo-row"><span class="promo-label">Estado</span><span class="promo-val">${state.competitor_satisfaction}</span></div>`;
+        if (state.sondeo_turns != null) compHtml += `<div class="promo-row"><span class="promo-label">Sondeo</span><span class="promo-val">${state.sondeo_turns} turnos</span></div>`;
+        compHtml += '</div>';
+      }
+      promoCompetitor.innerHTML = prodHtml + compHtml;
+
+      // Seccion comparacion
+      let cmpHtml = '';
+      const cr = state.comparison_result;
+      if (cr) {
+        cmpHtml = '<div class="promo-section"><div class="promo-section-title">Comparacion</div>';
+        if (cr.ahorro_estimado != null && cr.ahorro_estimado > 0) {
+          cmpHtml += `<div class="promo-row"><span class="promo-label">Ahorro</span><span class="promo-badge promo-badge-green">$${cr.ahorro_estimado.toLocaleString()}/mes</span></div>`;
+        }
+        for (const v of (cr.ventajas || []).slice(0, 5)) {
+          cmpHtml += `<div class="promo-ventaja">✓ ${v}</div>`;
+        }
+        if (cr.datos_faltantes && cr.datos_faltantes.length) {
+          cmpHtml += `<div class="promo-row"><span class="promo-label">Falta</span><span class="promo-val" style="color:#856404">${cr.datos_faltantes.join(', ')}</span></div>`;
+        }
+        cmpHtml += '</div>';
+      }
+      promoComparison.innerHTML = cmpHtml;
+    }
+
+    promoSelect.addEventListener('change', onPromoChange);
+
     async function init() {
+      await loadPromos();
       if (sessionId && customerName) {
         modal.classList.add('hidden');
         customerLabel.textContent = customerName;
@@ -520,6 +749,7 @@
       if (!confirm('Iniciar una nueva conversacion?')) return;
       localStorage.removeItem('session_id');
       localStorage.removeItem('customer_name');
+      localStorage.removeItem('selected_promo_id');
       location.reload();
     });
     btn.addEventListener('click', sendMessage);

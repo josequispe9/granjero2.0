@@ -8,6 +8,7 @@ from src.config import conversations
 from src.db import load_session, save_session
 from src.graph import agent
 from src.binary_tree.metrics import compute_metrics
+from src.promos.loader import list_promos, load_promo
 
 app = FastAPI(title="Vendedor IA - Agente CBST", version="1.0.0")
 
@@ -48,6 +49,18 @@ def _default_state(session_id: str, customer_name: str) -> dict:
         "used_arguments": [],
         "consecutive_ni": 0,
         "consecutive_ind": 0,
+        "competitor_provider": None,
+        "competitor_service_type": None,
+        "competitor_plan": None,
+        "competitor_price": None,
+        "competitor_satisfaction": None,
+        "sondeo_turns": 0,
+        "comparison_result": None,
+        "selected_promo_id": None,
+        "product_to_sell": None,
+        "products_rejected": [],
+        "offer_stage": "primary",
+        "cobertura_pendiente": False,
         "tactic": None,
         "bt_action_id": None,
         "bt_trace": [],
@@ -66,10 +79,57 @@ class ChatRequest(BaseModel):
     message: str
     session_id: str | None = None
     customer_name: str | None = None
+    selected_promo_id: str | None = None
 
 
 class StartRequest(BaseModel):
     customer_name: str
+    selected_promo_id: str | None = None
+
+
+@app.get("/promos")
+async def get_promos():
+    """Retorna promos de portabilidad para el dropdown."""
+    return list_promos()
+
+
+@app.get("/planes-fibra")
+async def get_planes_fibra():
+    """Retorna planes de fibra (siempre los mismos)."""
+    return load_promo("fibra")
+
+
+@app.get("/bundle-info")
+async def get_bundle_info():
+    """Retorna info del bundle porta+fibra."""
+    return load_promo("bundle_fibra_portabilidad")
+
+
+@app.get("/promo/{promo_id}")
+async def get_promo(promo_id: str):
+    """Retorna datos de una promo por id (GET simple, sin sesion)."""
+    data = load_promo(promo_id)
+    if not data:
+        raise HTTPException(status_code=404, detail="Promo no encontrada")
+    return data
+
+
+class SelectPromoRequest(BaseModel):
+    session_id: str
+    promo_id: str
+
+
+@app.post("/select-promo")
+async def select_promo(req: SelectPromoRequest):
+    """Selecciona una promo para la sesion."""
+    promo_data = load_promo(req.promo_id)
+    if not promo_data:
+        raise HTTPException(status_code=404, detail="Promo no encontrada")
+    doc = await load_session(req.session_id)
+    if doc:
+        doc["selected_promo_id"] = req.promo_id
+        await save_session(req.session_id, doc)
+    return {"promo_id": req.promo_id, "promo_data": promo_data}
 
 
 @app.get("/graph")
@@ -106,6 +166,8 @@ async def start_conversation(req: StartRequest):
 
     state = _default_state(session_id, req.customer_name)
     state["messages"] = [{"role": "assistant", "content": response_text}]
+    if req.selected_promo_id:
+        state["selected_promo_id"] = req.selected_promo_id
 
     await save_session(session_id, state)
 
@@ -136,6 +198,12 @@ async def chat(req: ChatRequest):
         for key in state:
             if key in doc and key != "messages":
                 state[key] = doc[key]
+
+    # Setear promo seleccionada desde request o doc
+    if req.selected_promo_id:
+        state["selected_promo_id"] = req.selected_promo_id
+    elif doc and doc.get("selected_promo_id"):
+        state["selected_promo_id"] = doc["selected_promo_id"]
 
     # Agregar mensaje del usuario
     messages = history + [{"role": "user", "content": req.message}]
@@ -184,6 +252,18 @@ def _extract_save_state(session_id: str, customer_name: str, result: dict, messa
         "cardone_phase": result.get("cardone_phase", "saludo"),
         "pain_point": result.get("pain_point"),
         "product_interested": result.get("product_interested"),
+        "competitor_provider": result.get("competitor_provider"),
+        "competitor_service_type": result.get("competitor_service_type"),
+        "competitor_plan": result.get("competitor_plan"),
+        "competitor_price": result.get("competitor_price"),
+        "competitor_satisfaction": result.get("competitor_satisfaction"),
+        "sondeo_turns": result.get("sondeo_turns", 0),
+        "comparison_result": result.get("comparison_result"),
+        "selected_promo_id": result.get("selected_promo_id"),
+        "product_to_sell": result.get("product_to_sell"),
+        "products_rejected": result.get("products_rejected", []),
+        "offer_stage": result.get("offer_stage", "primary"),
+        "cobertura_pendiente": result.get("cobertura_pendiente", False),
         "binary_tree": result.get("binary_tree", []),
         "objection": result.get("objection"),
         "used_arguments": result.get("used_arguments", []),

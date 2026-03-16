@@ -39,3 +39,13 @@ def max_intentos_dinamico(bb: dict) -> bool:
         max_attempts = 2
 
     return consecutive_ni < max_attempts
+
+
+def sondeo_insuficiente(bb: dict) -> bool:
+    """True si aun no se completaron 2 turnos de sondeo."""
+    return bb.get("sondeo_turns", 0) < 2
+
+
+def sondeo_suficiente(bb: dict) -> bool:
+    """True si ya se completaron al menos 2 turnos de sondeo."""
+    return bb.get("sondeo_turns", 0) >= 2

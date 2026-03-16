@@ -16,11 +16,7 @@ def evaluate_termination(bb: dict) -> str | None:
     if bb.get("bought"):
         return "CIERRE"
 
-    # PODA: 3 NI consecutivos
-    if bb.get("consecutive_ni", 0) >= 3:
-        return "PODA"
-
-    # HANDOFF: injection
+# HANDOFF: injection
     if bb.get("prompt_injection_attempts", 0) >= 3:
         return "HANDOFF"
 

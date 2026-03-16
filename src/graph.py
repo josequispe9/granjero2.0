@@ -8,11 +8,21 @@ from src.binary_tree.tree import append_node, get_consecutive_ni, should_prune
 from src.behaviour_tree.engine import tick_tree
 from src.generator.generator import generate_response
 from src.termination import evaluate_termination
+from src.comparator import compare
+from src.promos.loader import load_promo
 
 
 async def classify(state: Blackboard) -> dict:
     """Nodo: clasificador unificado (1 sola llamada a Haiku)."""
     messages = state["messages"]
+
+    # Contexto competidor acumulado
+    competitor_context = {
+        "provider": state.get("competitor_provider"),
+        "service_type": state.get("competitor_service_type"),
+        "plan": state.get("competitor_plan"),
+        "price": state.get("competitor_price"),
+    }
 
     # Una sola llamada: estado + injection + revision
     result = await classify_all(
@@ -20,6 +30,7 @@ async def classify(state: Blackboard) -> dict:
         state.get("pain_point"),
         state.get("product_interested"),
         state.get("customer_name", "Cliente"),
+        competitor_context=competitor_context,
     )
 
     updates: dict = {
@@ -54,6 +65,31 @@ async def classify(state: Blackboard) -> dict:
     if result["estado"] == "NI" and result["subestado"] != "ambiguo":
         updates["objection"] = result["subestado"]
 
+    # Campos competidor
+    if result.get("competitor_provider"):
+        updates["competitor_provider"] = result["competitor_provider"]
+    if result.get("competitor_service_type"):
+        updates["competitor_service_type"] = result["competitor_service_type"]
+    if result.get("competitor_plan"):
+        updates["competitor_plan"] = result["competitor_plan"]
+    if result.get("competitor_price") is not None:
+        updates["competitor_price"] = result["competitor_price"]
+    if result.get("competitor_satisfaction"):
+        updates["competitor_satisfaction"] = result["competitor_satisfaction"]
+
+    # Cobertura bloqueada: auto-rechazar fibra y pivotar
+    if result.get("cobertura_bloqueada"):
+        updates["cobertura_pendiente"] = True
+        rejected = list(state.get("products_rejected", []))
+        if "fibra" not in rejected:
+            rejected.append("fibra")
+        updates["products_rejected"] = rejected
+        # Si estabamos vendiendo fibra, forzar pivot a portabilidad
+        if state.get("product_to_sell") == "fibra" or not state.get("product_to_sell"):
+            updates["product_to_sell"] = "portabilidad"
+            updates["offer_stage"] = "pivot"
+            updates["comparison_result"] = None  # limpiar comparacion de fibra
+
     return updates
 
 
@@ -85,11 +121,55 @@ def decide_action(state: Blackboard) -> dict:
     }
 
     # Registrar tactica usada
-    if bb.get("tactic") and bb["tactic"] not in ("avanzar_fase", "pedir_confirmacion", "fallback_fin"):
+    non_tracked = ("avanzar_fase", "pedir_confirmacion", "fallback_fin", "pivotar_producto", "ofrecer_bundle")
+    if bb.get("tactic") and bb["tactic"] not in non_tracked:
         used = list(state.get("used_arguments", []))
         if bb["tactic"] not in used:
             used.append(bb["tactic"])
         updates["used_arguments"] = used
+
+    # Propagar sondeo_turns
+    if bb.get("sondeo_turns") is not None:
+        updates["sondeo_turns"] = bb["sondeo_turns"]
+
+    # Propagar campos de producto
+    if bb.get("product_to_sell") is not None:
+        updates["product_to_sell"] = bb["product_to_sell"]
+    if bb.get("products_rejected") is not None:
+        updates["products_rejected"] = bb["products_rejected"]
+    if bb.get("offer_stage"):
+        updates["offer_stage"] = bb["offer_stage"]
+    if bb.get("comparison_result") is not None:
+        updates["comparison_result"] = bb["comparison_result"]
+
+    # Ejecutar comparador si tactic necesita comparacion
+    product = bb.get("product_to_sell")
+    if bb.get("tactic") in ("comparar_competencia", "pivotar_producto", "ofrecer_bundle"):
+        selected_promo = state.get("selected_promo_id")
+
+        # Elegir promo segun product_to_sell
+        if product == "fibra":
+            promo_data = load_promo("fibra")
+        elif product == "bundle":
+            promo_data = load_promo("bundle_fibra_portabilidad")
+        elif product == "portabilidad" and selected_promo:
+            promo_data = load_promo(selected_promo)
+        else:
+            promo_data = None
+
+        if promo_data:
+            service_type = state.get("competitor_service_type")
+            # Para comparar, mapear product_to_sell al service_type del comparador
+            compare_service = "fibra" if product == "fibra" else "movil" if product == "portabilidad" else service_type
+            competitor_offer = {
+                "provider": state.get("competitor_provider"),
+                "service_type": compare_service,
+                "plan": state.get("competitor_plan"),
+                "price": state.get("competitor_price"),
+                "satisfaction": state.get("competitor_satisfaction"),
+            }
+            comparison = compare(competitor_offer, promo_data)
+            updates["comparison_result"] = comparison
 
     # Propagate termination if BT set it
     if bb.get("termination"):

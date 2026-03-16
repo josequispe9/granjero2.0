@@ -14,7 +14,10 @@
       "Bash(docker ps:*)",
       "Bash(docker exec:*)",
       "Bash(docker rm:*)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(/tmp/codebase_structure.txt:*)",
+      "Read(//tmp/**)",
+      "Bash(python3:*)"
     ]
   }
 }
